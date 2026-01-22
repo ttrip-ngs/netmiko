@@ -22,6 +22,7 @@
 - Aruba OS Switch
 - AudioCodes Gateways & Controllers
 - Broadcom ICOS
+- Buffalo VR
 - Calix B6
 - Casa Systems CMTS
 - Centec Networks

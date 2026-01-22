@@ -30,6 +30,7 @@ from netmiko.audiocode import (
 from netmiko.bintec import BintecBossSSH, BintecBossTelnet
 from netmiko.brocade import BrocadeFOSSSH
 from netmiko.broadcom import BroadcomIcosSSH
+from netmiko.buffalo import BuffaloVRSSH
 from netmiko.calix import CalixB6SSH, CalixB6Telnet
 from netmiko.casa import CasaCMTSSSH
 from netmiko.cdot import CdotCrosSSH
@@ -211,6 +212,7 @@ CLASS_MAPPER_BASE = {
     "brocade_netiron": ExtremeNetironSSH,
     "brocade_nos": ExtremeNosSSH,
     "brocade_vdx": ExtremeNosSSH,
+    "buffalo_vr": BuffaloVRSSH,
     "brocade_vyos": VyOSSSH,
     "checkpoint_gaia": CheckPointGaiaSSH,
     "calix_b6": CalixB6SSH,
