@@ -154,6 +154,7 @@ from netmiko.ruijie import RuijieOSSSH, RuijieOSTelnet
 from netmiko.silverpeak import SilverPeakVXOASSH
 from netmiko.sixwind import SixwindOSSSH
 from netmiko.sophos import SophosSfosSSH
+from netmiko.sundenshi import SundenshiSE220SSH
 from netmiko.teldat import TeldatCITSSH, TeldatCITTelnet
 from netmiko.telcosystems import TelcoSystemsBinosSSH, TelcoSystemsBinosTelnet
 from netmiko.terminal_server import TerminalServerSSH, TerminalServerTelnet
@@ -324,6 +325,7 @@ CLASS_MAPPER_BASE = {
     "sixwind_os": SixwindOSSSH,
     "sophos_sfos": SophosSfosSSH,
     "supermicro_smis": SmciSwitchSmisSSH,
+    "sundenshi_se220": SundenshiSE220SSH,
     "telcosystems_binos": TelcoSystemsBinosSSH,
     "teldat_cit": TeldatCITSSH,
     "tplink_jetstream": TPLinkJetStreamSSH,
