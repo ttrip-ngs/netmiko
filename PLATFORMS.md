@@ -66,6 +66,7 @@
 - Pluribus
 - Ruckus ICX/FastIron
 - Ruijie Networks
+- Sun Denshi SE220
 - Supermicro SMIS
 - Teldat CIT
 - TPLink JetStream
@@ -277,6 +278,7 @@
 - silverpeak_vxoa
 - sixwind_os
 - sophos_sfos
+- sundenshi_se220
 - supermicro_smis
 - telcosystems_binos
 - teldat_cit
