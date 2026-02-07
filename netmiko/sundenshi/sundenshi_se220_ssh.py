@@ -11,7 +11,7 @@ class SundenshiSE220SSH(BaseConnection):
     """Sun Denshi SE220 SSH driver.
 
     SE220 is a dual-SIM router with a simple CLI interface:
-    - Single prompt: 'Rooster SE>'
+    - Single prompt: 'RoosterSE>'
     - No enable/privileged mode concept
     - No configure terminal mode
     - Settings modified with 'set' command
@@ -22,9 +22,12 @@ class SundenshiSE220SSH(BaseConnection):
     def session_preparation(self) -> None:
         """Prepare the session after the connection has been established.
 
-        SE220 has a simple prompt: 'Rooster SE>'
+        SE220 has a simple prompt: 'RoosterSE>'
+        SE220 outputs ANSI escape sequences, so we enable stripping.
         """
-        self._test_channel_read(pattern=r"Rooster\s+SE>")
+        # Enable ANSI escape code stripping
+        self.ansi_escape_codes = True
+        self._test_channel_read(pattern=r"Rooster\s*SE>")
         self.set_base_prompt()
         # SE220 does not have paging functionality, so disable_paging is a no-op
         self.disable_paging()
@@ -45,6 +48,26 @@ class SundenshiSE220SSH(BaseConnection):
         # SE220 has no paging, so nothing to disable
         return ""
 
+    def strip_ansi_escape_codes(self, string_buffer: str) -> str:
+        """Remove ANSI escape codes from SE220 output.
+
+        SE220 outputs unusual cursor control sequences without the ESC prefix:
+        [s - Save cursor position
+        [u - Restore cursor position
+
+        These appear interleaved with command echo characters.
+        """
+        # Remove SE220 specific cursor control sequences (without ESC prefix)
+        # Pattern: [s or [u followed by a single character
+        output = re.sub(r"\[s[^\[\n]", "", string_buffer)
+        output = re.sub(r"\[u", "", output)
+
+        # Also handle patterns like [ss, [sh, etc (save cursor + char)
+        output = re.sub(r"\[s.", "", output)
+
+        # Call parent to handle standard ANSI escape codes
+        return super().strip_ansi_escape_codes(output)
+
     def set_base_prompt(
         self,
         pri_prompt_terminator: str = r">",
@@ -54,15 +77,15 @@ class SundenshiSE220SSH(BaseConnection):
     ) -> str:
         """Sets self.base_prompt based on device prompt.
 
-        SE220 prompt format: 'Rooster SE>'
-        The base_prompt will be set to 'Rooster SE' (without the '>')
+        SE220 prompt format: 'RoosterSE>' (no space between Rooster and SE)
+        The base_prompt will be set to 'RoosterSE' (without the '>')
         """
         prompt = self.find_prompt(delay_factor=delay_factor)
         prompt = prompt.strip()
 
-        # SE220 prompt is 'Rooster SE>'
+        # SE220 prompt is 'RoosterSE>' (may have optional space)
         # Extract the base part (everything before '>')
-        match = re.search(r"^(.+?)>", prompt)
+        match = re.search(r"(Rooster\s*SE)>", prompt)
         if match:
             self.base_prompt = match.group(1).strip()
             return self.base_prompt
