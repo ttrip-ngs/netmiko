@@ -17,16 +17,21 @@ class SundenshiSE220SSH(BaseConnection):
     - Settings modified with 'set' command
     - Settings saved with 'save config' and applied with 'apply config'
     - No paging functionality
+    - Command echo is wrapped in ESC[s/ESC[u cursor save/restore sequences,
+      so cmd_verify must be disabled.
     """
 
     def session_preparation(self) -> None:
         """Prepare the session after the connection has been established.
 
         SE220 has a simple prompt: 'RoosterSE>'
-        SE220 outputs ANSI escape sequences, so we enable stripping.
+        SE220 wraps command echo in ESC[s/ESC[u cursor save/restore sequences,
+        so ANSI stripping is enabled and cmd_verify is disabled.
         """
         # Enable ANSI escape code stripping
         self.ansi_escape_codes = True
+        # SE220 wraps echo in ESC[s/ESC[u; cmd_verify cannot detect echo reliably
+        self.global_cmd_verify = False
         self._test_channel_read(pattern=r"Rooster\s*SE>")
         self.set_base_prompt()
         # SE220 does not have paging functionality, so disable_paging is a no-op
@@ -51,21 +56,19 @@ class SundenshiSE220SSH(BaseConnection):
     def strip_ansi_escape_codes(self, string_buffer: str) -> str:
         """Remove ANSI escape codes from SE220 output.
 
-        SE220 outputs unusual cursor control sequences without the ESC prefix:
-        [s - Save cursor position
-        [u - Restore cursor position
+        SE220 wraps each command echo character in cursor save/restore sequences:
+            ESC[s + <char> + ESC[u
+        For example, 'show version' echo appears as:
+            ESC[s s ESC[u ESC[s h ESC[u ESC[s o ESC[u ...
 
-        These appear interleaved with command echo characters.
+        The parent class does not handle ESC[s (Save Cursor Position) and
+        ESC[u (Restore Cursor Position), so we strip them here.
         """
-        # Remove SE220 specific cursor control sequences (without ESC prefix)
-        # Pattern: [s or [u followed by a single character
-        output = re.sub(r"\[s[^\[\n]", "", string_buffer)
-        output = re.sub(r"\[u", "", output)
+        # Remove cursor save/restore sequences (ESC[s and ESC[u)
+        output = re.sub(r"\x1b\[s", "", string_buffer)
+        output = re.sub(r"\x1b\[u", "", output)
 
-        # Also handle patterns like [ss, [sh, etc (save cursor + char)
-        output = re.sub(r"\[s.", "", output)
-
-        # Call parent to handle standard ANSI escape codes
+        # Call parent to handle other standard ANSI escape codes
         return super().strip_ansi_escape_codes(output)
 
     def set_base_prompt(

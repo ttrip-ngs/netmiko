@@ -335,3 +335,9 @@ fs_os:
   ip: 10.1.11.200
   username: admin
   password: admin
+
+sundenshi_se220:
+  device_type: sundenshi_se220
+  ip: 192.168.254.254
+  username: admin
+  password: admin
